@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="three.js"></script>
+    <script src="OrbitControls.js"></script>
+    <style>
+.slide-in-bck-center{animation:slide-in-bck-center .7s cubic-bezier(.25,.46,.45,.94) both}
+
+ @keyframes slide-in-bck-center{0%{transform:translateZ(600px);opacity:0}100%{transform:translateZ(0);opacity:1}}
+    </style>
+</head>
+<body>
+   <button onclick="myFunction(this)" style=" position: absolute; top: 40%; height: 100px; width: 160px; text-align: center; left: 45%;">Play Now</button>
+ 
+   <script>
+        var max =0;
+      var player = [];
+      function myFunction(elt) {
+        var person = prompt("Please enter your name");
+        if (person != null) {
+           player.push(person);
+           elt.remove();
+           start();
+        }
+      }
+      function start()
+      { let h1 = document.createElement("h1");
+    
+      h1.innerHTML = "Score : 0";  
+     
+      h1.setAttribute("style","position: absolute; top: 5%; left: 5%; color: aliceblue;");
+      h1.setAttribute("id","score");
+    
+      document.body.appendChild(h1);
+      
+         const scene = new THREE.Scene();
+       const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+       const renderer = new THREE.WebGLRenderer();
+       renderer.setSize( window.innerWidth, window.innerHeight );
+       document.body.appendChild( renderer.domElement );
+
+
+   
+    var geometry = new THREE.CircleGeometry( 0.5, 90 );
+    var material = new THREE.MeshBasicMaterial( { color: 0xffffff } )
+    const cA = new THREE.Mesh( geometry, material );
+    material = new THREE.MeshBasicMaterial( { color: 0xffffff } )
+    const cB = new THREE.Mesh( geometry, material );
+    cB.scale.set(0.5, 0.5, 0);
+    cA.position.set( 0, 0, 0 );
+    const group = new THREE.Group();
+    scene.add( cA );
+    scene.add( group );
+      
+   //line
+   const points = [];
+   points.push( new THREE.Vector3( - 23, -11, 0 ) );
+   points.push( new THREE.Vector3( -23, 11, 0 ) );
+   points.push( new THREE.Vector3( 23, 11, 0 ) );
+   points.push( new THREE.Vector3( 23, -11, 0 ) );
+
+   const materia = new THREE.LineBasicMaterial( { color: 0xffffff } );
+   const geometr = new THREE.BufferGeometry().setFromPoints( points );
+   const line = new THREE.LineLoop( geometr, materia );
+   scene.add( line );
+   
+       camera.position.z = 16;
+   
+
+    
+       document.onkeydown = checkKey;
+       function checkKey(e) 
+       {e.preventDefault();
+           e = e || window.event;
+
+           if (e.keyCode == '38') 
+           {
+                 
+               if(cA.position.y < 10)
+               {
+                  //up arrow
+                  cA.position.y += 1;
+               }
+            }
+            else if (e.keyCode == '40') 
+            {
+               // down arrow
+               if(cA.position.y > -10)
+               {
+                  cA.position.y -= 1;
+
+               }
+            }
+            else if (e.keyCode == '37') 
+            {
+               // left arrow
+               if(cA.position.x > -21)
+               {
+                  cA.position.x -= 1;
+
+               }
+            }
+            else if (e.keyCode == '39') 
+            {
+              // right arrow
+              if(cA.position.x < 21)
+               {
+                  cA.position.x += 1;
+
+               }
+            }
+           
+          
+           
+            checkEnd();
+            score();
+            
+        }
+        generate();
+       var sc = 0;
+       function len()
+       {
+         const geometry = new THREE.BoxGeometry( 1, 1, 0 );
+         const material = new THREE.MeshBasicMaterial( {color: 'hsl(0,100%,50%)'} );
+          const cube = new THREE.Mesh( geometry, material );
+          cube.position.set( cA.position.x+1, cA.position.y, 0 );
+        group.add( cube );
+
+       }
+       function score()
+       {
+
+          if(cA.position.x === cB.position.x && cA.position.y === cB.position.y)
+          {
+             sc = sc+100;
+             let score_data = document.getElementById("score");
+             score_data.innerHTML = `Score : ${sc}`;
+             let point = scene.getObjectByName("B");
+             scene.remove(point)
+             generate();
+             len();
+             console.log('score',sc);
+          }
+       }
+       function getRandomInt(min, max) 
+        {
+           min = Math.ceil(min);
+           max = Math.floor(max);
+           return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        function generate()
+       {
+            cB.name = 'B';
+
+            var color = ['#0000ff','#ff0000','#ffff00', '#00ff00', '#0000ff']
+            var x = getRandomInt(-21, 21);
+            var y = getRandomInt(-10, 10);
+            var z = 0;
+            var h = getRandomInt(0, 360);
+            if(h===0)
+            {   
+               h = 200;
+            }
+            const color6 = new THREE.Color(`hsl(${h}, 100%, 50%)`);
+            cB.material.color.set(color6); 
+            for(var i =0; i<= group.children.length-1; i++)
+            {
+               if(x === group.children[i].position.x && y === group.children[i].position.y )
+               {
+                  console.log("box and random point is equal");
+                  generate();
+                 
+                  return false;
+               }
+            }
+
+            
+            cB.position.set( x, y, z );
+           
+            scene.add( cB );
+       }
+       function checkEnd()
+       {
+         for(var i =0; i<= group.children.length-1; i++)
+            {
+               if(cA.position.x === group.children[i].position.x && cA.position.y === group.children[i].position.y )
+               {
+                  console.log('You Died');
+                  console.log('Your Score is', sc);
+                  let curntScore = document.createElement("h1");
+                  curntScore.innerHTML = `You Died. Your Score is ${sc}`;
+                  curntScore.setAttribute("style","position: absolute; top: 40%; left: 40%; color: aliceblue;z-index:9999;");
+                  curntScore.setAttribute("class","slide-in-bck-center");
+                  curntScore.setAttribute("id","dead");
+                  document.body.appendChild(curntScore);
+                  setTimeout(()=>{curntScore.remove();},1000)
+                  player.push(sc);
+                  console.log('---------------------Your Info------------------------------------');
+                  console.log('Player', player[0]);
+                  console.log('Your Score', player[player.length-1]);
+                  console.log('---------------------Your Attempts------------------------------------');
+                
+                  for(var s =1; s<player.length; s++)
+                  {
+                     console.log('Attempt', s,'Your Score', player[s]);
+                     if(max<player[s])
+                     {
+                        max = player[s];
+                     }
+                  }
+                  console.log('---------------------High Score------------------------------------');
+                  let prevHiScore = document.getElementById("highScore") || null;
+                  if(prevHiScore !== null){
+                     prevHiScore.remove();
+                  }
+                  let h2 =  document.createElement("h1");
+                  h2.innerHTML = `High Score : ${max}`;
+                  h2.setAttribute("style","position: absolute; top: 5%; right: 5%; color: aliceblue;");
+                  h2.setAttribute("id","highScore");
+                  document.body.appendChild(h2);
+                  console.log('Your High Score', max);
+
+                  sc = 0;
+             let score_data = document.getElementById("score");
+             score_data.innerHTML = `Score : ${sc}`;
+                  group.children = [];
+               }
+            }
+       }
+       function animate() 
+       {
+         
+	        requestAnimationFrame( animate );
+            renderer.render( scene, camera );            
+       }
+
+       animate();
+
+       //Resize
+      window.addEventListener("resize", () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
+      }
+
+      
+    </script>
+</body>
+</html>
